@@ -133,7 +133,7 @@ class _Contract(object):
     # ABI Helpers
     #
     @classmethod
-    def find_matching_abi(cls, fn_name, arguments):
+    def find_matching_fn_abi(cls, fn_name, arguments):
         filters = [
             functools.partial(filter_by_name, fn_name),
             functools.partial(filter_by_argument_count, arguments),
@@ -156,12 +156,15 @@ class _Contract(object):
             raise ValueError("Multiple functions found")
 
     @classmethod
+    def find_
+
+    @classmethod
     @coerce_return_to_text
     def encodeABI(cls, fn_name, arguments, data=None):
         """
         encodes the arguments using the Ethereum ABI.
         """
-        function_abi = cls.find_matching_abi(fn_name, force_obj_to_bytes(arguments))
+        function_abi = cls.find_matching_fn_abi(fn_name, force_obj_to_bytes(arguments))
         return cls._encodeABI(function_abi, arguments, data)
 
     @classmethod
@@ -216,7 +219,7 @@ class _Contract(object):
         """
         raise NotImplementedError('Not implemented')
 
-    def pastEvents(self, event, filters, callback):
+    def pastEvents(self, event, filter_params, *callbacks):
         """
         register a callback to be triggered on all past events.
         """
@@ -317,7 +320,7 @@ def call_contract_function(contract=None,
     if not arguments:
         arguments = []
 
-    function_abi = contract.find_matching_abi(function_name, arguments)
+    function_abi = contract.find_matching_fn_abi(function_name, arguments)
     function_selector = function_abi_to_4byte_selector(function_abi)
 
     transaction['data'] = contract.encodeABI(
@@ -343,7 +346,7 @@ def transact_with_contract_function(contract=None,
     if not arguments:
         arguments = []
 
-    function_abi = contract.find_matching_abi(function_name, arguments)
+    function_abi = contract.find_matching_fn_abi(function_name, arguments)
     function_selector = function_abi_to_4byte_selector(function_abi)
 
     transaction['data'] = contract.encodeABI(
@@ -363,7 +366,7 @@ def estimate_gas_for_function(contract=None,
     if not arguments:
         arguments = []
 
-    function_abi = contract.find_matching_abi(function_name, arguments)
+    function_abi = contract.find_matching_fn_abi(function_name, arguments)
     function_selector = function_abi_to_4byte_selector(function_abi)
 
     transaction['data'] = contract.encodeABI(

@@ -43,6 +43,16 @@ def filter_by_argument_count(arguments, contract_abi):
     ]
 
 
+def filter_by_argument_name(argument_names, contract_abi):
+    return [
+        abi
+        for abi in contract_abi
+        if set(argument_names).intersection(
+            {arg['name'] for arg in abi['inputs']}
+        ) == set(argument_names)
+    ]
+
+
 def is_encodable(_type, value):
     try:
         base, sub, arrlist = _type

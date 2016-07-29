@@ -218,13 +218,31 @@ class Eth(object):
     def estimateGas(self, transaction):
         return self.request_manager.request_blocking("eth_estimateGas", [transaction])
 
-    def filter(self, *args, **kwargs):
+    def filter(self, filter_params):
         """
         `eth_newFilter`
         `eth_newBlockFilter`
         `eth_uninstallFilter`
         """
-        raise NotImplementedError("TODO")
+        if is_string(filter_params):
+            if filter_params not in {"pending", "latest"}:
+                raise ValueError(
+                    "The filter API only accepts the values of `pending` or "
+                    "`latest` for string based filters"
+                )
+            filter_id = self.request_manager.request_blocking("eth_newFilter", [{
+                'fromBlock': 'pending',
+                'toBlock': 'pending
+            }])
+        elif isinstance(filter_params, dict):
+            filter_id = self.request_manager.request_blocking("eth_newFilter", [filter_params])
+        else:
+            raise ValueError("Must provide either a string or a valid filter object")
+
+        assert False, "TODO: implement the return object that allows `watching` for changes"
+
+    def _getFilterChanges(self, filter_id):
+        return self.request_manager.request_blocking("eth_getFilterChanges", [filter_id])
 
     def contract(self, abi, address=None, **kwargs):
         contract_class = construct_contract_class(self.web3, abi, **kwargs)

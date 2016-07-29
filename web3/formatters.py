@@ -4,6 +4,7 @@ from web3.iban import Iban
 
 from web3.utils.string import (
     force_text,
+    coerce_args_to_text,
     coerce_return_to_text,
 )
 from web3.utils.address import (
@@ -23,6 +24,9 @@ from web3.utils.encoding import (
     decode_hex,
     from_decimal,
     to_decimal,
+)
+from web3.utils.functional import (
+    identity,
 )
 import web3.utils.config as config
 
@@ -69,39 +73,48 @@ def inputCallFormatter(options):
     return options
 
 
+@coerce_args_to_text
 @coerce_return_to_text
-def inputTransactionFormatter(options):
-    """
-    Formats the input of a transaction and converts all values to HEX
-    """
-    options.setdefault("from", config.defaultAccount)
-    options["from"] = inputAddressFormatter(options["from"])
+def input_transaction_formatter(txn):
+    defaults = {
+        'from': config.defaultAccount,
+    }
+    formatters = {
+        'from': inputAddressFormatter,
+        'to': inputAddressFormatter,
+        'gasPrice': to_decimal,
+        'gas': to_decimal,
+        'value': to_decimal,
+        'nonce': to_decimal,
+    }
+    return {
+        key: formatters.get(key, identity)(txn.get(key, defaults.get(key)))
+        for key in set(txn.keys() + defaults.keys())
+    }
 
-    if options.get("to"):
-        options["to"] = inputAddressFormatter(options["to"])
 
-    for key in ("gasPrice", "gas", "value", "nonce"):
-        if key in options:
-            options[key] = from_decimal(options[key])
-
-    return options
+inputTransactionFormatter = input_transaction_formatter
 
 
+@coerce_args_to_text
 @coerce_return_to_text
-def outputTransactionFormatter(tx):
-    """
-    Formats the output of a transaction to its proper values
-    """
-    if tx.get("blockNumber"):
-        tx["blockNumber"] = to_decimal(tx["blockNumber"])
-    if tx.get("transactionIndex"):
-        tx["transactionIndex"] = to_decimal(tx["transactionIndex"])
+def output_transaction_formatter(txn):
+    formatters = {
+        'blockNumber': lambda v: None if v is None else to_decimal(v),
+        'transactionIndex': lambda v: None if v is None else to_decimal(v),
+        'nonce': to_decimal,
+        'gas': to_decimal,
+        'gasPrice': to_decimal,
+        'value': to_decimal,
+    }
 
-    tx["nonce"] = to_decimal(tx["nonce"])
-    tx["gas"] = to_decimal(tx["gas"])
-    tx["gasPrice"] = to_decimal(tx["gasPrice"])
-    tx["value"] = to_decimal(tx["value"])
-    return tx
+    return {
+        key: formatters.get(key, identity)(value)
+        for key, value in txn.items()
+    }
+
+
+outputTransactionFormatter = output_transaction_formatter
 
 
 @coerce_return_to_text
@@ -222,3 +235,28 @@ def outputSyncingFormatter(result):
     result["highestBlock"] = to_decimal(result["highestBlock"])
 
     return result
+
+
+def transaction_pool_formatter(value, txn_formatter):
+    return {
+        'pending': {
+            sender: {
+                to_decimal(nonce): [txn_formatter(txn) for txn in txns]
+                for nonce, txns in txns_by_sender.items()
+            } for sender, txns_by_sender in value.get('pending', {}).items()
+        },
+        'queued': {
+            sender: {
+                to_decimal(nonce): [txn_formatter(txn) for txn in txns]
+                for nonce, txns in txns_by_sender.items()
+            } for sender, txns_by_sender in value.get('queued', {}).items()
+        },
+    }
+
+
+def transaction_pool_content_formatter(value):
+    return transaction_pool_formatter(value, output_transaction_formatter)
+
+
+def transaction_pool_inspect_formatter(value):
+    return transaction_pool_formatter(value, identity)

@@ -1,7 +1,7 @@
 def test_filter_against_pending_transactions(web3, wait_for_transaction):
-    seen_logs = []
+    seen_txns = []
     txn_filter = web3.eth.filter("pending")
-    txn_filter.watch(seen_logs.append)
+    txn_filter.watch(seen_txns.append)
 
     txn_1_hash = web3.eth.sendTransaction({
         'from': web3.eth.coinbase,
@@ -19,5 +19,5 @@ def test_filter_against_pending_transactions(web3, wait_for_transaction):
 
     txn_filter.stop_watching(30)
 
-    assert txn_1_hash in seen_logs
-    assert txn_2_hash in seen_logs
+    assert txn_1_hash in seen_txns
+    assert txn_2_hash in seen_txns

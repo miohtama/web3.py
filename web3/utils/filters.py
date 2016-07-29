@@ -23,9 +23,10 @@ class BaseFilter(gevent.Greenlet):
 
         while self.running:
             changes = self.web3.eth.getFilterChanges(self.filter_id)
-            for change in changes:
-                for callback_fn in self.callbacks:
-                    callback_fn(change)
+            if changes:
+                for change in changes:
+                    for callback_fn in self.callbacks:
+                        callback_fn(change)
             gevent.sleep(random.random())
 
     def watch(self, *callbacks):

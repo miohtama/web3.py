@@ -231,8 +231,8 @@ class Eth(object):
                     "`latest` for string based filters"
                 )
             filter_id = self.request_manager.request_blocking("eth_newFilter", [{
-                'fromBlock': 'pending',
-                'toBlock': 'pending
+                'fromBlock': filter_params,
+                'toBlock': filter_params,
             }])
         elif isinstance(filter_params, dict):
             filter_id = self.request_manager.request_blocking("eth_newFilter", [filter_params])

@@ -4,12 +4,17 @@
 
 [![Build Status](https://travis-ci.org/ethereum/web3.py.png)](https://travis-ci.org/ethereum/web3.py)
    
-
-A Python implementation of [web3.js](https://github.com/ethereum/web3.js)
+A Python implementation of Web3 API - [See web3.js](https://github.com/ethereum/web3.js)
 
 * Python 3.5+ support
 
-Read more in the [documentation on ReadTheDocs](http://web3py.readthedocs.io/). [View the change log on Github](docs/releases.rst).
+* [Documentation](http://web3py.readthedocs.io/)
+
+* [Changelog](docs/releases.rst)
+
+* [Chat](https://gitter.im/ethereum/web3.py)
+
+* [Mailing list](https://groups.google.com/forum/#!forum/python-ethereum)
 
 ## Quickstart
 
